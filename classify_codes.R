@@ -1,3 +1,6 @@
+#Base code provided by Dr. Matthew Marcus as part of U. of AZ GIST class 601B - Remote Sensing.
+##with some modifications by Travis Zalesky.
+
 library(tidyverse)
 library(caret)
 validateMap = function(r, val, sampsize = 1000, class_col){
