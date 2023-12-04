@@ -1,4 +1,4 @@
-#Base code provided by Dr. Matthew Marcus as part of U. of AZ GIST class 601B - Remote Sensing.
+#Base code provided by Dr. Victor Hugo Gutierrez Valez and Dr. Matthew Marcus as part of U. of AZ GIST class 601B - Remote Sensing.
 ##with some modifications by Travis Zalesky.
 
 library(tidyverse)
