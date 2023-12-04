@@ -11,23 +11,37 @@
 ### 4. Calculate dNBR and describe long term recovery, 3 years post fire.
 
 #Packages
+#install.packages("terra")
 library(terra)
-#library(raster)
 
 #Set WD
-wd <- "C:/Users/travi/Documents/Education/UoA/GIST 601B/Labs/Aus Wildfire - Final"
+wd <- choose.dir()
 setwd(wd)
 #getwd() #check wd
 
+dir() #explore directory
 
+#Prefered file sturcture.
+subfolder_names <- c("Fire", "Fire/Data", "Fire/Output", "Prefire1", "Prefire1/Data", "Prefire1/Output", "Prefire2", "Prefire2/Data", "Prefire2/Output",
+                    "Postfire1", "Postfire1/Data", "Postfire1/Output", "Postfire2", "Postfire2/Data", "Postfire2/Output", "2023", "2023/Data", "2023/Output",
+                    "MOD13Q1") 
+
+for (name in subfolder_names) {
+
+ dir.create(name)
+
+}
+
+#Download Images from EarthExplorer according to table in ReadMe file.
+##Place downloaded data files in the appropriate folder using your prefered method.
 
 ###First Image -----
 sub <- "Fire"
 dir(paste(sub, "Data", sep = "/"))
 tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
 
-#untar(paste(sub, "Data", tarFile, sep = "/"), 
- #     exdir = paste(sub, "Data", sep = "/"))
+untar(paste(sub, "Data", tarFile, sep = "/"), 
+      exdir = paste(sub, "Data", sep = "/"))
 
 dir(paste(sub, "Data", sep = "/"))
 
@@ -38,7 +52,7 @@ im1 <- rast(paste(sub, "Data", ls, sep = "/"))
 
 plotRGB(im1, r = 4, g = 3, b = 2, stretch = "lin")
 
-e <- ext(633959, 785100, -4050000, -3930811)
+e <- ext(633959, 785100, -4050000, -3930811) #e should be the same for all images
 plotRGB(im1, r = 4, g = 3, b = 2, stretch = "lin")
 plot(e, add = T)
 
@@ -69,8 +83,70 @@ sub <- "Prefire1"
 dir(paste(sub, "Data", sep = "/"))
 tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
 
-#untar(paste(sub, "Data", tarFile, sep = "/"), 
- #    exdir = paste(sub, "Data", sep = "/"))
+untar(paste(sub, "Data", tarFile, sep = "/"), 
+     exdir = paste(sub, "Data", sep = "/"))
+
+dir(paste(sub, "Data", sep = "/"))
+
+ls <- list.files(paste(sub, "Data", sep = "/"), pattern = "B\\d+.TIF")
+ls
+
+im2 <- rast(paste(sub, "Data", ls, sep = "/"))
+
+plotRGB(im2, r = 4, g = 3, b = 2, smooth = T, stretch = "lin")
+
+e <- ext(633959, 785100, -4000000, -3930811) #e should be the same for all images
+plotRGB(im2, r = 4, g = 3, b = 2, stretch = "lin")
+plot(e, add = T)
+
+im2_e <- crop(im3, e)
+
+plotRGB(im2_e, r = 4, g = 3, b = 2, stretch = "lin")
+
+writeRaster(im2_e, filename = paste(sub, "Data/20190223_Crop.tif", sep = "/"))
+
+png(paste(sub, "Output/True_Color1.png", sep = "/"), bg = 0)
+plotRGB(im2_e, r = 4, g = 3, b = 2, stretch = "lin")
+dev.off()
+
+plotRGB(im2_e, r=8, g=3, b=2, stretch = "lin")
+png(paste(sub, "Output/Thermal1.png", sep = "/"), bg = 0)
+plotRGB(im2_e, r = 8, g = 3, b = 2, stretch = "lin")
+dev.off()
+
+plotRGB(im3_e, r = 8, g = 4, b = 3, stretch = "lin")
+png(paste(sub, "Output/Thermal2.png", sep = "/"), bg = 0)
+plotRGB(im2_e, r = 8, g = 4, b = 3, stretch = "lin")
+dev.off()
+
+### Clip Raster in ArcGIS Pro
+### Save output in appropriate Data folder using YYYYMMDD_Clip.tif filenaming convention.
+
+im2_clip <- rast(paste(sub, "Data/20190223_Clip.tif", sep = "/"))
+plotRGB(im2_clip, r = 4, g = 3, b = 2, stretch = "lin")
+
+#Calculate Indices
+##NBR = (NIR-SWIR2)/(NIR+SWIR2)
+initNBR_pre <- (im2_clip[[5]]-im2_clip[[7]])/(im2_clip[[5]]+im2_clip[[7]])
+plot(initNBR_pre, axes = F)
+
+##NDVI = (NIR-Red)/(NIR+Red)
+initNDVI_pre <- (im2_clip[[5]]-im2_clip[[4]])/(im2_clip[[5]]+im2_clip[[4]])
+plot(initNDVI_pre, axes = F)
+
+im2_clip <- c(im2_clip, initNBR_pre, initNDVI_pre)
+names(im2_clip) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "NBR", "NDVI")
+
+writeRaster(im2_clip, filename = paste(sub, "Data/20200210_ClipPlus.tif", sep = "/"))
+
+###Initial Postfire -----
+sub <- "Postfire1"
+
+dir(paste(sub, "Data", sep = "/"))
+tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
+
+untar(paste(sub, "Data", tarFile, sep = "/"), 
+      exdir = paste(sub, "Data", sep = "/"))
 
 dir(paste(sub, "Data", sep = "/"))
 
@@ -82,18 +158,20 @@ im3 <- rast(paste(sub, "Data", ls, sep = "/"))
 plotRGB(im3, r = 4, g = 3, b = 2, smooth = T, stretch = "lin")
 
 e <- ext(633959, 785100, -4000000, -3930811)
-plotRGB(im2, r = 4, g = 3, b = 2, stretch = "lin")
+plotRGB(im3, r = 4, g = 3, b = 2, stretch = "lin")
 plot(e, add = T)
 
 im3_e <- crop(im3, e)
 
 plotRGB(im3_e, r = 4, g = 3, b = 2, stretch = "lin")
 
-writeRaster(im3_e, filename = paste(sub, "Data/20190223_Crop.tif", sep = "/"))
+writeRaster(im3_e, filename = paste(sub, "Data/20200210_Crop.tif", sep = "/"),
+            overwrite = T)
 
 png(paste(sub, "Output/True_Color1.png", sep = "/"), bg = 0)
 plotRGB(im3_e, r = 4, g = 3, b = 2, stretch = "lin")
 dev.off()
+
 
 plotRGB(im3_e, r=8, g=3, b=2, stretch = "lin")
 png(paste(sub, "Output/Thermal1.png", sep = "/"), bg = 0)
@@ -106,96 +184,24 @@ plotRGB(im3_e, r = 8, g = 4, b = 3, stretch = "lin")
 dev.off()
 
 ### Clip Raster in ArcGIS Pro
-im3_clip <- rast(paste(sub, "Data/20190223_Clip.tif", sep = "/"))
+### Save output in appropriate Data folder using YYYYMMDD_Clip.tif filenaming convention.
+
+im3_clip <- rast(paste(sub, "Data/20200210_Clip.tif", sep = "/"))
 plotRGB(im3_clip, r = 4, g = 3, b = 2, stretch = "lin")
-
-#Calculate Indices
-##NBR = (NIR-SWIR2)/(NIR+SWIR2)
-initNBR_pre <- (im3_clip[[5]]-im3_clip[[7]])/(im3_clip[[5]]+im3_clip[[7]])
-plot(initNBR_pre, axes = F)
-
-##NDVI = (NIR-Red)/(NIR+Red)
-initNDVI_pre <- (im3_clip[[5]]-im3_clip[[4]])/(im3_clip[[5]]+im3_clip[[4]])
-plot(initNDVI_pre, axes = F)
-
-im3_clip <- c(im3_clip, initNBR_pre, initNDVI_pre)
-names(im3_clip) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "NBR", "NDVI")
-
-writeRaster(im3_clip, filename = paste(sub, "Data/20200210_ClipPlus.tif", sep = "/"))
-
-###Initial Postfire -----
-sub <- "Postfire1"
-
-dir(paste(sub, "Data", sep = "/"))
-tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
-
-#untar(paste(sub, "Data", tarFile, sep = "/"), 
- #     exdir = paste(sub, "Data", sep = "/"))
-
-dir(paste(sub, "Data", sep = "/"))
-
-ls <- list.files(paste(sub, "Data", sep = "/"), pattern = "B\\d+.TIF")
-ls
-
-im2 <- rast(paste(sub, "Data", ls, sep = "/"))
-
-plotRGB(im2, r = 4, g = 3, b = 2, smooth = T, stretch = "lin")
-
-e <- ext(633959, 785100, -4000000, -3930811)
-plotRGB(im2, r = 4, g = 3, b = 2, stretch = "lin")
-plot(e, add = T)
-
-im2_e <- crop(im2, e)
-
-#Rescale bands 
-#{start <- Sys.time()
-#im2_e[[1]] <- im2_e[[1]]-im2_e[[1]]@pnt[["range_min"]]
-#im2_e[[2]] <- im2_e[[2]]-im2_e[[2]]@pnt[["range_min"]]
-#im2_e[[3]] <- im2_e[[3]]-im2_e[[3]]@pnt[["range_min"]]
-#im2_e[[4]] <- im2_e[[4]]-im2_e[[4]]@pnt[["range_min"]]
-#im2_e[[5]] <- im2_e[[5]]-im2_e[[5]]@pnt[["range_min"]]
-#im2_e[[6]] <- im2_e[[6]]-im2_e[[6]]@pnt[["range_min"]]
-#im2_e[[7]] <- im2_e[[7]]-im2_e[[7]]@pnt[["range_min"]]
-#im2_e[[8]] <- im2_e[[8]]-im2_e[[8]]@pnt[["range_min"]]
-#stop <- Sys.time()
-#print(stop-start)} #End Rescale block
-
-plotRGB(im2_e, r = 4, g = 3, b = 2, stretch = "lin")
-
-writeRaster(im2_e, filename = paste(sub, "Data/20200210_Crop.tif", sep = "/"),
-            overwrite = T)
-
-png(paste(sub, "Output/True_Color1.png", sep = "/"), bg = 0)
-plotRGB(im2_e, r = 4, g = 3, b = 2, stretch = "lin")
-dev.off()
-
-
-plotRGB(im2_e, r=8, g=3, b=2, stretch = "lin")
-png(paste(sub, "Output/Thermal1.png", sep = "/"), bg = 0)
-plotRGB(im2_e, r = 8, g = 3, b = 2, stretch = "lin")
-dev.off()
-
-plotRGB(im2_e, r = 8, g = 4, b = 3, stretch = "lin")
-png(paste(sub, "Output/Thermal2.png", sep = "/"), bg = 0)
-plotRGB(im2_e, r = 8, g = 4, b = 3, stretch = "lin")
-dev.off()
-### Clip Raster in ArcGIS Pro
-im2_clip <- rast(paste(sub, "Data/20200210_Clip.tif", sep = "/"))
-plotRGB(im2_clip, r = 4, g = 3, b = 2, stretch = "lin")
 
 #Calculate Indicies
 ##NBR = (NIR-SWIR2)/(NIR+SWIR2)
-initNBR_post <- (im2_clip[[5]]-im2_clip[[7]])/(im2_clip[[5]]+im2_clip[[7]])
+initNBR_post <- (im3_clip[[5]]-im3_clip[[7]])/(im3_clip[[5]]+im3_clip[[7]])
 plot(initNBR_post, axes = F)
 
 ##NDVI = (NIR-Red)/(NIR+Red)
-initNDVI_post <- (im2_clip[[5]]-im2_clip[[4]])/(im2_clip[[5]]+im2_clip[[4]])
+initNDVI_post <- (im3_clip[[5]]-im3_clip[[4]])/(im3_clip[[5]]+im3_clip[[4]])
 plot(initNDVI_post, axes = F)
 
-im2_clip <- c(im2_clip, initNBR_post, initNDVI_post)
-names(im2_clip) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "NBR", "NDVI")
+im2_clip <- c(im3_clip, initNBR_post, initNDVI_post)
+names(im3_clip) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "NBR", "NDVI")
 
-writeRaster(im2_clip, filename = paste(sub, "Data/20200210_ClipPlus.tif", sep = "/"))
+writeRaster(im3_clip, filename = paste(sub, "Data/20200210_ClipPlus.tif", sep = "/"))
 
 ### Initial dNBR ----
 initdNBR <- initNBR_pre - initNBR_post
@@ -212,8 +218,8 @@ sub <- "Prefire2"
 dir(paste(sub, "Data", sep = "/"))
 tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
 
-#untar(paste(sub, "Data", tarFile, sep = "/"), 
- #   exdir = paste(sub, "Data", sep = "/"))
+untar(paste(sub, "Data", tarFile, sep = "/"), 
+    exdir = paste(sub, "Data", sep = "/"))
 
 dir(paste(sub, "Data", sep = "/"))
 
@@ -247,7 +253,10 @@ plotRGB(im4_e, r = 8, g = 4, b = 3, stretch = "lin")
 png(paste(sub, "Output/Thermal2.png", sep = "/"), bg = 0)
 plotRGB(im4_e, r = 8, g = 4, b = 3, stretch = "lin")
 dev.off()
+
 ### Clip Raster in ArcGIS Pro
+### Save output in appropriate Data folder using YYYYMMDD_Clip.tif filenaming convention.
+
 im4_clip <- rast(paste(sub, "Data/20191208_Clip.tif", sep = "/"))
 plotRGB(im4_clip, r = 4, g = 3, b = 2, stretch = "lin")
 
@@ -271,8 +280,8 @@ sub <- "Postfire2"
 dir(paste(sub, "Data", sep = "/"))
 tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
 
-#untar(paste(sub, "Data", tarFile, sep = "/"), 
- #    exdir = paste(sub, "Data", sep = "/"))
+untar(paste(sub, "Data", tarFile, sep = "/"), 
+     exdir = paste(sub, "Data", sep = "/"))
 
 dir(paste(sub, "Data", sep = "/"))
 
@@ -308,7 +317,10 @@ plotRGB(im5_e, r = 8, g = 4, b = 3, stretch = "lin")
 png(paste(sub, "Output/Thermal2.png", sep = "/"), bg = 0)
 plotRGB(im5_e, r = 8, g = 4, b = 3, stretch = "lin")
 dev.off()
+
 ### Clip Raster in ArcGIS Pro
+### Save output in appropriate Data folder using YYYYMMDD_Clip.tif filenaming convention.
+
 im5_clip <- rast(paste(sub, "Data/20201226_Clip.tif", sep = "/"))
 plotRGB(im5_clip, r = 4, g = 3, b = 2, stretch = "lin")
 
@@ -341,8 +353,8 @@ sub <- "2023"
 dir(paste(sub, "Data", sep = "/"))
 tarFile <- list.files(paste(sub, "Data", sep = "/"), pattern = ".tar")
 
-#untar(paste(sub, "Data", tarFile, sep = "/"), 
- #   exdir = paste(sub, "Data", sep = "/"))
+untar(paste(sub, "Data", tarFile, sep = "/"), 
+    exdir = paste(sub, "Data", sep = "/"))
 
 dir(paste(sub, "Data", sep = "/"))
 
@@ -368,7 +380,6 @@ png(paste(sub, "Output/True_Color1.png", sep = "/"), bg = 0)
 plotRGB(im6_e, r = 4, g = 3, b = 2, stretch = "lin")
 dev.off()
 
-
 plotRGB(im6_e, r=8, g=3, b=2, stretch = "lin")
 png(paste(sub, "Output/Thermal1.png", sep = "/"), bg = 0)
 plotRGB(im6_e, r = 8, g = 3, b = 2, stretch = "lin")
@@ -378,7 +389,10 @@ plotRGB(im6_e, r = 8, g = 4, b = 3, stretch = "lin")
 png(paste(sub, "Output/Thermal2.png", sep = "/"), bg = 0)
 plotRGB(im6_e, r = 8, g = 4, b = 3, stretch = "lin")
 dev.off()
+
 ### Clip Raster in ArcGIS Pro
+### Save output in appropriate Data folder using YYYYMMDD_Clip.tif filenaming convention.
+
 im6_clip <- rast(paste(sub, "Data/20231008_Clip.tif", sep = "/"))
 plotRGB(im6_clip, r = 4, g = 3, b = 2, stretch = "lin")
 
@@ -406,6 +420,9 @@ writeRaster(extdNBR_2023, filename = "2023/Output/dNBR.tif")
 ## Reclassify and calculate burn severity in ArcGIS Pro
 
 ###MOD13Q1 -----
+#install.packages("tidyverse")
+#install.packages("lubridate")
+#install.packages("zoo")
 library(tidyverse)
 library(lubridate)
 library(zoo)
@@ -422,17 +439,18 @@ df <- read.csv(paste(sub, ls, sep = "/"))%>%
   mutate(mean48 = rollmean(mean, 3, fill = NA),
          dayNum = as.numeric(date - min(date)))
 
-source("C:/Users/travi/Documents/My Code/R Tutorial and Conventions/ggplot theme/ggplot theme.R")
+source("ggplot theme.R")
 
 ggplot(subset(df, date >= ymd("2012-01-01")), aes(date, mean48))+
-  #stat_smooth(col = "black", se = F, fullrange=TRUE, linewidth = 0.7)+
-  geom_vline(xintercept = mdy("12/20/2019"), col = "red", linewidth = 1)+
+  #stat_smooth(col = "black", se = F, fullrange=TRUE, linewidth = 0.7)+ #optional trendline
+  #geom_vline(xintercept = mdy("12/20/2019"), col = "red", linewidth = 1)+ #optional vertical line indicating date of fire
   geom_line(linewidth = 1)+
   labs(title = "MODIS/Terra Vegetation Indices",
        subtitle = "Kangaroo Island",
        y = "48 Day Mean MOD13Q1")
 ggsave(filename = "MOD13Q1/MOD13Q1_48Day.png")
 
+#Some MOD13Q1 statistics
 prefireMax <- max(subset(df, date > ymd("2012-01-01") & date <= ymd("2019-12-01"))$mean48, na.rm = T)
 prefireMin <- min(subset(df, date > ymd("2012-01-01") & date <= ymd("2019-12-01"))$mean48, na.rm = T)
 prefireMean <- mean(subset(df, date > ymd("2012-01-01") & date <= ymd("2019-12-01"))$mean48, na.rm = T)
@@ -444,6 +462,7 @@ min(subset(df, year(date) == "2023")$mean48, na.rm = T)
 colors <- c("darkgreen", "green", "gold3", "tomato", "red", "red4")
 
 initdNBR_reclass <- rast("Postfire1/Data/InitdNBR.tif")
+
 png("Postfire1/Output/dNBR Reclass.png", width = 1500, height = 660)
 plot(initdNBR_reclass, col = colors, axes = F, legend = "topright", 
      background = "#A1CDEF",
@@ -455,7 +474,8 @@ plot(initdNBR_reclass, col = colors, axes = F, legend = "topright",
      main = "Initial dNBR", cex.main = 5)
 
 dev.off()
-png("Postfire1/Output/dNBR Reclass Alt.png", width = 1500, height = 660)
+
+                png("Postfire1/Output/dNBR Reclass Alt.png", width = 1500, height = 660)
 plot(initdNBR_reclass, col = colors, axes = F, legend = NA, 
      background = "#A1CDEF", mar=c(1,0,5,0), 
      main = "Initial dNBR", cex.main = 5)
@@ -474,6 +494,7 @@ plot(extdNBR_reclass, col = colors, axes = F, legend = "topright",
      mar=c(1,0,5,0),
      main = "Initial dNBR", cex.main = 5)
 dev.off()
+                
 png("Postfire2/Output/dNBR Reclass Alt.png", width = 1500, height = 660)
 plot(extdNBR_reclass, col = colors, axes = F, legend = NA, 
      background = "#A1CDEF", mar=c(1,0,5,0),
@@ -492,15 +513,15 @@ plot(dNBR2023_reclass, col = colors, axes = F, legend = "topright",
      mar=c(1,0,5,0), #mar=c(bottom, left, top, right)
      main = "Initial dNBR", cex.main = 5)
 dev.off()
+                
 png("2023/Output/dNBR Reclass Alt.png", width = 1500, height = 660)
 plot(dNBR2023_reclass, col = colors, axes = F, legend = NA, 
      background = "#A1CDEF", mar=c(1,0,5,0), 
      main = "Initial dNBR", cex.main = 5)
 dev.off()
 
-
-{start <- Sys.time()
-  png("Reclass Comp.png", width = 3000, height = 1320)
+#This takes about 14 seconds to render.
+png("Reclass Comp.png", width = 3000, height = 1320)
 par(mfrow = c(2,2))
 plot(initdNBR_reclass, col = colors, axes = F, legend = NA, 
      background = "#A1CDEF", mar=c(1,2,5,1), #mar=c(bottom, left, top, right)
@@ -515,14 +536,16 @@ plot(dNBR2023_reclass, col = colors, axes = F, #legend = "right",
      ),
      main = "Long Term Recovery", cex.main = 7)
 dev.off()
-stop <- Sys.time()
-print(stop-start)}
 
 ### RF classification ----------
+#install.packages("sf")
+#install.packages("randomForest")
+#install.packages("beepr")
 library(sf)
 library(randomForest)
-library(beepr)
+#library(beepr) #optional package to alert user when code finishes.
 
+#Use provided training Shapefile, created in ArcGIS Pro.
 train <- vect(paste("Postfire1/Data",
                     list.files(path = "Postfire1/Data", pattern = ".shp"), sep ="/"))
 im <- rast(paste("Postfire1/Data",
@@ -541,7 +564,7 @@ plot(train, add = TRUE, col = "red")
 train <- project(train, im)
 
 # partition the training data into training and validation
-source("C:/Users/travi/Documents/Education/UoA/GIST 601B/Labs/Lab 10/classify_codes.R")
+source("classify_codes.R") #Code provided by Professor Dr. Matthew Marcus, UoA.
 train_val <- crossvalidsp(train, att = "Classname")
 
 ## run a random forest classification using the partitioned training data
@@ -559,22 +582,24 @@ extracted_values$Classname <- training_data$Classname[match(extracted_values$ID,
 extracted_values$Classname <- as.factor(extracted_values$Classname)
 extracted_values <- extracted_values[-1]
 
-# run the random forest
-{start <- Sys.time()
+# run the random forest - This can take several minutes!
+{start <- Sys.time() #Optional argument for calculating runtime.
   rf <- randomForest(formula = Classname ~ ., data = extracted_values, 
                      ntree = 1000, na.action = na.omit,
                      importance = TRUE, type = "classification")
-  stop <- Sys.time()
-  print(stop-start)
-  beep("mario")}
+  stop <- Sys.time() #Optional argument for calculating runtime.
+  print(stop-start) #Print runtime.
+  #beep("mario") #Optional sound to alert user from package beepr
+}
 
-# Use the random forest to generate a raster with the predict function
-{start <- Sys.time()
+# Use the random forest to generate a raster with the predict function - This can take several minutes!
+{start <- Sys.time() #Optional argument for calculating runtime.
   classification <- terra::predict(object = im, model = rf, type = "class", 
                                    na.rm = TRUE)
-  stop <- Sys.time()
-  print(stop-start)
-  beep("mario")}
+  stop <- Sys.time() #Optional argument for calculating runtime.
+  print(stop-start) #Print runtime.
+  #beep("mario") #Optional sound to alert user from package beepr
+}
 
 col <- c("grey10", "darkred", "olivedrab", "khaki", "ghostwhite", "plum", "blue2")
 plot(classification, col = col, axes = F, main = "Random Forest Classification")
@@ -590,9 +615,6 @@ plot(classification, col = col, axes = F, legend = "topright",
      mar=c(1,0,5,0),
      background = "#A1CDEF",)
 dev.off()
-### Here you should reset the working directory to wherever you want to save your map
-#dir.create("Images")
-#writeRaster(classification, filename = "Images/Classification1.tif", datatype = "INT1U")
 
 # validate the map
 val <- validateMap(classification, val = train_val[[1]], sampsize = 1000, class_col = "Classname")
@@ -603,13 +625,13 @@ accs <- getAccus(val)
 ## plot your accuracy
 df <- accs%>%
   dplyr::filter(Class != "overall")%>%# drop overall
-  mutate(Class = replace(Class, Class == "Pasture/Agriculture", "Pasture/ Agriculture"))
+  mutate(Class = replace(Class, Class == "Pasture/Agriculture", "Pasture/ Agriculture")) #For improved text wrapping in ggplot.
 
 vals <- c("#00CC00", "#377EB8") # green and blue codes
 labs <- c("Producer's Accuracy","User's Accuracy" )
 
 #Set plotting theme
-source("C:/Users/travi/Documents/My code/R Tutorial and Conventions/ggplot theme/ggplot Theme.R")
+source("ggplot Theme.R")
 
 accPlot <- ggplot(df, aes(x = Class, y = Accuracy, fill = factor(type))) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
