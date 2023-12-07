@@ -1,6 +1,6 @@
 # Kangaroo-Island-Wildfire
 
-This original code is the product of Travis Zalesky's <a href = "https://sites.google.com/view/traviszaleskyprojectportfolio/home?authuser=1">Final Project in U. of AZ MS GIST class 601B - Remote Sensing</a>. It is being provided publicly in the interest of transparity and repeatability. Any part of this work may be used or modified, but please credit my work. Thank you.
+This original code is the product of Travis Zalesky's <a href = "https://sites.google.com/view/traviszaleskyprojectportfolio/remote-sensing?authuser=1">Final Project in U. of AZ MS GIST class 601B - Remote Sensing</a>. It is being provided publicly in the interest of transparity and repeatability. Any part of this work may be used or modified, but please credit my work. Thank you.
 
 
 
