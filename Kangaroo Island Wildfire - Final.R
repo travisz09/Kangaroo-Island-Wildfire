@@ -475,7 +475,7 @@ plot(initdNBR_reclass, col = colors, axes = F, legend = "topright",
 
 dev.off()
 
-                png("Postfire1/Output/dNBR Reclass Alt.png", width = 1500, height = 660)
+png("Postfire1/Output/dNBR Reclass Alt.png", width = 1500, height = 660)
 plot(initdNBR_reclass, col = colors, axes = F, legend = NA, 
      background = "#A1CDEF", mar=c(1,0,5,0), 
      main = "Initial dNBR", cex.main = 5)
