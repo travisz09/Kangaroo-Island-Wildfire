@@ -99,7 +99,7 @@ e <- ext(633959, 785100, -4000000, -3930811) #e should be the same for all image
 plotRGB(im2, r = 4, g = 3, b = 2, stretch = "lin")
 plot(e, add = T)
 
-im2_e <- crop(im3, e)
+im2_e <- crop(im2, e)
 
 plotRGB(im2_e, r = 4, g = 3, b = 2, stretch = "lin")
 
