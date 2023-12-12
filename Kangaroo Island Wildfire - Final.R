@@ -635,11 +635,11 @@ source("ggplot Theme.R")
 
 accPlot <- ggplot(df, aes(x = Class, y = Accuracy, fill = factor(type))) +
   geom_bar(stat = "identity", position = "dodge", width = 0.7) +
-  scale_x_discrete("Classes") +
-  scale_y_continuous("Accuracy %") +
+  labs(title = "Random Forest Classification Accuracy",
+       x = "Classes",
+       y = "Accuracy %")
   scale_fill_manual(values = vals,
                     labels = function(x) str_wrap(labs, width = 10)) +
-  ggtitle("Random Forest Classification Accuracy")+
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10))+
   theme(axis.text.x = element_text(angle = 65, hjust = 1, vjust = 1), 
         legend.title = element_blank())
