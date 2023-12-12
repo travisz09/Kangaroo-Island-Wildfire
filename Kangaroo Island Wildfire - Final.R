@@ -114,7 +114,7 @@ png(paste(sub, "Output/Thermal1.png", sep = "/"), bg = 0)
 plotRGB(im2_e, r = 8, g = 3, b = 2, stretch = "lin")
 dev.off()
 
-plotRGB(im3_e, r = 8, g = 4, b = 3, stretch = "lin")
+plotRGB(im2_e, r = 8, g = 4, b = 3, stretch = "lin")
 png(paste(sub, "Output/Thermal2.png", sep = "/"), bg = 0)
 plotRGB(im2_e, r = 8, g = 4, b = 3, stretch = "lin")
 dev.off()
