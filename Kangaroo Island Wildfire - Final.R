@@ -198,7 +198,7 @@ plot(initNBR_post, axes = F)
 initNDVI_post <- (im3_clip[[5]]-im3_clip[[4]])/(im3_clip[[5]]+im3_clip[[4]])
 plot(initNDVI_post, axes = F)
 
-im2_clip <- c(im3_clip, initNBR_post, initNDVI_post)
+im3_clip <- c(im3_clip, initNBR_post, initNDVI_post)
 names(im3_clip) <- c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B10", "NBR", "NDVI")
 
 writeRaster(im3_clip, filename = paste(sub, "Data/20200210_ClipPlus.tif", sep = "/"))
